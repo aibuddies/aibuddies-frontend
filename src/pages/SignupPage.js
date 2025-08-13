@@ -17,16 +17,11 @@ const SignupPage = ({ setView, onSignupSuccess }) => {
       await api.signup({ fullname, email, password });
       onSignupSuccess();
     } catch (err) {
-      // Log the full error to the console for debugging
-      console.error("Signup Error:", err); 
-      
-      // FIX: This now correctly handles the error object to display the detailed message from the backend
-      let errorMessage = 'An unexpected error occurred. Please try again.';
-      if (err && err.message) {
-        errorMessage = err.message;
-      }
-      setError(errorMessage);
-
+      // --- FIX ---
+      // This now correctly captures the detailed error message from the API call.
+      // e.g., "Email already registered"
+      setError(err.message || 'An unexpected error occurred. Please try again.');
+      console.error("Signup Error:", err);
     } finally {
       setIsLoading(false);
     }
