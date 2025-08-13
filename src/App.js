@@ -4,6 +4,7 @@ import Header from './components/Header';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import DashboardPage from './pages/DashboardPage';
+import EmailVerificationPage from './pages/EmailVerificationPage';
 
 export default function App() {
   const [view, setView] = useState('loading');
@@ -21,13 +22,25 @@ export default function App() {
         setView('login');
       }
     } else {
-      setView('login');
+        const path = window.location.pathname;
+        if (path.startsWith('/verify-email/')) {
+            setView('verify-email');
+        } else {
+            setView('login');
+        }
     }
   }, []);
 
   useEffect(() => {
-    fetchUser();
+    // This effect runs once on component mount to determine the initial view
+    const currentPath = window.location.pathname;
+    if (currentPath.startsWith('/verify-email/')) {
+      setView('verify-email');
+    } else {
+      fetchUser();
+    }
   }, [fetchUser]);
+
 
   const handleLogout = () => {
     localStorage.removeItem('accessToken');
@@ -36,11 +49,18 @@ export default function App() {
   };
   
   const handleSignupSuccess = () => {
-      alert('Signup successful! Please log in to continue.');
+      alert('Signup successful! Please check your email to verify your account.');
       setView('login');
   }
 
   const renderView = () => {
+    const path = window.location.pathname;
+    // This logic ensures that if the user navigates directly to the verification link, it shows the correct page.
+    if (path.startsWith('/verify-email/')) {
+        const token = path.split('/verify-email/')[1];
+        return <EmailVerificationPage token={token} setView={setView} />;
+    }
+
     switch (view) {
       case 'loading':
         return <div className="min-h-screen bg-gray-100 flex items-center justify-center"><p className="text-lg font-medium">Loading AIBUDDIES...</p></div>;
