@@ -20,12 +20,13 @@ const SignupPage = ({ setView, onSignupSuccess }) => {
       // Log the full error to the console for debugging
       console.error("Signup Error:", err); 
       
-      // Provide a more specific error message for network failures
-      if (err.message.includes("Failed to fetch")) {
-        setError("Cannot connect to the server. Please ensure the backend is running and accessible.");
-      } else {
-        setError(err.message || 'Failed to create account. Please try again.');
+      // FIX: This now correctly handles the error object to display the detailed message from the backend
+      let errorMessage = 'An unexpected error occurred. Please try again.';
+      if (err && err.message) {
+        errorMessage = err.message;
       }
+      setError(errorMessage);
+
     } finally {
       setIsLoading(false);
     }
