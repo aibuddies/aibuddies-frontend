@@ -17,7 +17,15 @@ const SignupPage = ({ setView, onSignupSuccess }) => {
       await api.signup({ fullname, email, password });
       onSignupSuccess();
     } catch (err) {
-      setError(err.message || 'Failed to create account. Please try again.');
+      // Log the full error to the console for debugging
+      console.error("Signup Error:", err); 
+      
+      // Provide a more specific error message for network failures
+      if (err.message.includes("Failed to fetch")) {
+        setError("Cannot connect to the server. Please ensure the backend is running and accessible.");
+      } else {
+        setError(err.message || 'Failed to create account. Please try again.');
+      }
     } finally {
       setIsLoading(false);
     }
