@@ -14,36 +14,44 @@ const api = {
       ...customConfig,
       headers: { ...headers, ...customConfig.headers },
     };
+
+    // --- FIX START ---
+    // This logic now correctly handles the two different request types.
     if (body) {
-      // For login, the backend expects form data, not JSON
+      // For the login endpoint, send data as form-urlencoded.
       if (endpoint === '/users/login') {
-          const formData = new URLSearchParams();
-          formData.append('username', body.email); // FastAPI's OAuth2 expects 'username'
-          formData.append('password', body.password);
-          config.body = formData;
-          config.headers['Content-Type'] = 'application/x-www-form-urlencoded';
+        const formData = new URLSearchParams();
+        // FastAPI's OAuth2 expects 'username' and 'password' fields in the form.
+        formData.append('username', body.email); 
+        formData.append('password', body.password);
+        config.body = formData;
+        // The Content-Type must be explicitly set for form data.
+        config.headers['Content-Type'] = 'application/x-www-form-urlencoded';
       } else {
-          config.body = JSON.stringify(body);
+        // For all other POST/PUT requests, send data as JSON.
+        config.body = JSON.stringify(body);
       }
     }
+    // --- FIX END ---
 
 
     try {
       const response = await fetch(`${API_URL}${endpoint}`, config);
       if (!response.ok) {
         const errorData = await response.json();
-        // Use the detailed error message from the backend
+        // Throw an error with the specific detail message from the backend.
         throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
       }
-      // Handle cases with no content in the response body
+      // Handle cases with no content in the response body (like 204).
       if (response.status === 204) return null;
       return await response.json();
     } catch (error) {
       console.error('API request error:', error);
-      // Re-throw the error so the component can catch it
+      // Re-throw the error so the component's .catch() block can handle it.
       throw error;
     }
   },
+
   login: (credentials) => api.request('/users/login', { body: credentials }),
   signup: (userData) => api.request('/users/signup', { body: userData }),
   getMe: () => api.request('/users/me'),
