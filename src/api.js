@@ -1,4 +1,4 @@
-const API_URL = "https://aibuddies-backend.onrender.com"; // Your live backend URL
+const API_URL = "https://aibuddies-backend.onrender.com/api"; // Your live backend URL
 
 const api = {
   async request(endpoint, options = {}) {
@@ -14,7 +14,19 @@ const api = {
       ...customConfig,
       headers: { ...headers, ...customConfig.headers },
     };
-    if (body) config.body = JSON.stringify(body);
+    if (body) {
+        // For login, the backend expects form data, not JSON
+        if (endpoint === '/users/login') {
+            const formData = new URLSearchParams();
+            formData.append('username', body.email);
+            formData.append('password', body.password);
+            config.body = formData;
+            config.headers['Content-Type'] = 'application/x-www-form-urlencoded';
+        } else {
+            config.body = JSON.stringify(body);
+        }
+    }
+
 
     try {
       const response = await fetch(`${API_URL}${endpoint}`, config);
@@ -32,6 +44,7 @@ const api = {
   login: (credentials) => api.request('/users/login', { body: credentials }),
   signup: (userData) => api.request('/users/signup', { body: userData }),
   getMe: () => api.request('/users/me'),
+  verifyEmail: (token) => api.request(`/users/verify-email/${token}`), // Added verifyEmail
   repurposeText: (data) => api.request('/tools/repurpose-text', { body: data }),
   generatePrompt: (data) => api.request('/tools/generate-prompt', { body: data }),
   generateCaption: (data) => api.request('/tools/generate-caption', { body: data }),
