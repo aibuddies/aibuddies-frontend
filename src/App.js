@@ -22,6 +22,7 @@ export default function App() {
         const userData = await api.getMe();
         setUser(userData);
       } catch (error) {
+        console.error("Error fetching user:", error);
         localStorage.removeItem("accessToken");
         setUser(null);
       }
@@ -51,9 +52,25 @@ export default function App() {
       {user && <Header user={user} onLogout={handleLogout} />}
       <Routes>
         {/* Public Routes */}
-        <Route path="/login" element={<LoginPage onLoginSuccess={fetchUser} />} />
-        <Route path="/signup" element={<SignupPage onSignupSuccess={() => alert("Signup successful! Please verify your email.")} />} />
-        <Route path="/verify-email/:token" element={<EmailVerificationPage setUser={setUser} />} />
+        <Route
+          path="/login"
+          element={<LoginPage onLoginSuccess={fetchUser} />}
+        />
+        <Route
+          path="/signup"
+          element={
+            <SignupPage
+              onSignupSuccess={() => {
+                alert("Signup successful! Please verify your email.");
+                window.location.href = "/login";
+              }}
+            />
+          }
+        />
+        <Route
+          path="/verify-email/:token"
+          element={<EmailVerificationPage setUser={setUser} />}
+        />
 
         {/* Protected Routes */}
         <Route
@@ -69,7 +86,7 @@ export default function App() {
           element={user ? <WatchAdPage /> : <Navigate to="/login" />}
         />
 
-        {/* Catch-all Redirect */}
+        {/* Catch-all */}
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>
