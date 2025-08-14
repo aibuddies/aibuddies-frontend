@@ -5,6 +5,25 @@ import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import DashboardPage from './pages/DashboardPage';
 import EmailVerificationPage from './pages/EmailVerificationPage';
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import BuyCreditsPage from "./pages/BuyCreditsPage";
+import WatchAdPage from "./pages/WatchAdPage";
+import DashboardPage from "./pages/DashboardPage";
+
+function App() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<DashboardPage />} />
+        <Route path="/buy-credits" element={<BuyCreditsPage />} />
+        <Route path="/watch-ad" element={<WatchAdPage />} />
+        {/* ... other routes */}
+      </Routes>
+    </Router>
+  );
+}
+
+export default App;
 
 export default function App() {
   const [view, setView] = useState('loading');
