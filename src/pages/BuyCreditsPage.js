@@ -1,11 +1,10 @@
-// src/pages/BuyCreditsPage.js
 import React from "react";
 import api from "../api";
 
 const plans = [
-  { credits: 50, price: 39 },
-  { credits: 150, price: 99 },
-  { credits: 400, price: 199 }
+  { id: "small", credits: 50, price: 39 },
+  { id: "medium", credits: 150, price: 99 },
+  { id: "large", credits: 400, price: 199 }
 ];
 
 export default function BuyCreditsPage() {
@@ -28,26 +27,23 @@ export default function BuyCreditsPage() {
     }
 
     try {
-      // 1. Create order from backend
-      const { data } = await api.post("/buy-credits/create-order", {
-        amount: plan.price,
-        credits: plan.credits
-      });
+      // 1. Create order from backend (pass plan name)
+      const { data } = await api.post(`/buy-credits/create-order?plan=${plan.id}`);
 
       const options = {
-        key: process.env.REACT_APP_RAZORPAY_KEY_ID, // add this in frontend .env
+        key: process.env.REACT_APP_RAZORPAY_KEY_ID, // from frontend .env
         amount: data.amount,
         currency: "INR",
         name: "AI Buddies",
         description: `${plan.credits} Credits`,
         order_id: data.id,
         handler: async function (response) {
-          // 2. Verify payment
+          // 2. Verify payment with backend
           await api.post("/buy-credits/verify-payment", {
             ...response,
-            credits: plan.credits
+            plan: plan.id
           });
-          alert("Payment successful! Credits added.");
+          alert("✅ Payment successful! Credits added.");
         },
         prefill: {
           name: "AI Buddies User",
