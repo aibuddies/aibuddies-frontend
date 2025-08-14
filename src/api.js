@@ -1,61 +1,39 @@
-const API_URL = "https://aibuddies-backend.onrender.com/api"; // Your live backend URL
+// Prefer env; fall back to your Render URL
+const API_URL = process.env.REACT_APP_API_URL || "https://aibuddies-backend.onrender.com/api";
 
 const api = {
   async request(endpoint, options = {}) {
-    const { body, ...customConfig } = options;
+    const { body, ...custom } = options;
     const headers = { 'Content-Type': 'application/json' };
     const token = localStorage.getItem('accessToken');
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
+    if (token) headers['Authorization'] = `Bearer ${token}`;
 
     const config = {
       method: options.method || (body ? 'POST' : 'GET'),
-      ...customConfig,
-      headers: { ...headers, ...customConfig.headers },
+      ...custom,
+      headers: { ...headers, ...custom.headers },
     };
 
-    // --- FIX START ---
-    // This logic now correctly handles the two different request types.
     if (body) {
-      // For the login endpoint, send data as form-urlencoded.
-      if (endpoint === '/users/login') {
-        const formData = new URLSearchParams();
-        // FastAPI's OAuth2 expects 'username' and 'password' fields in the form.
-        formData.append('username', body.email); 
-        formData.append('password', body.password);
-        config.body = formData;
-        // The Content-Type must be explicitly set for form data.
-        config.headers['Content-Type'] = 'application/x-www-form-urlencoded';
-      } else {
-        // For all other POST/PUT requests, send data as JSON.
-        config.body = JSON.stringify(body);
-      }
+      // IMPORTANT: backend expects JSON for ALL endpoints, including /users/login
+      config.body = JSON.stringify(body);
     }
-    // --- FIX END ---
 
-
-    try {
-      const response = await fetch(`${API_URL}${endpoint}`, config);
-      if (!response.ok) {
-        const errorData = await response.json();
-        // Throw an error with the specific detail message from the backend.
-        throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
-      }
-      // Handle cases with no content in the response body (like 204).
-      if (response.status === 204) return null;
-      return await response.json();
-    } catch (error) {
-      console.error('API request error:', error);
-      // Re-throw the error so the component's .catch() block can handle it.
-      throw error;
+    const res = await fetch(`${API_URL}${endpoint}`, config);
+    if (!res.ok) {
+      let detail = `HTTP ${res.status}`;
+      try { detail = (await res.json()).detail || detail; } catch (_) {}
+      throw new Error(detail);
     }
+    if (res.status === 204) return null;
+    return res.json();
   },
 
   login: (credentials) => api.request('/users/login', { body: credentials }),
   signup: (userData) => api.request('/users/signup', { body: userData }),
   getMe: () => api.request('/users/me'),
   verifyEmail: (token) => api.request(`/users/verify-email/${token}`),
+
   repurposeText: (data) => api.request('/tools/repurpose-text', { body: data }),
   generatePrompt: (data) => api.request('/tools/generate-prompt', { body: data }),
   generateCaption: (data) => api.request('/tools/generate-caption', { body: data }),
