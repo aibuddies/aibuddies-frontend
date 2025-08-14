@@ -3,10 +3,13 @@ import React, { useState, useEffect, useCallback } from "react";
 import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
 import api from "./api";
 
+// Components
 import Header from "./components/Header";
+
+// Pages
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
-import DashboardPage from "./pages/DashboardPage"; // ✅ Only this import
+import DashboardPage from "./pages/DashboardPage";
 import EmailVerificationPage from "./pages/EmailVerificationPage";
 import BuyCreditsPage from "./pages/BuyCreditsPage";
 import WatchAdPage from "./pages/WatchAdPage";
@@ -51,6 +54,7 @@ export default function App() {
     <Router>
       {user && <Header user={user} onLogout={handleLogout} />}
       <Routes>
+        {/* Public Routes */}
         <Route path="/login" element={<LoginPage onLoginSuccess={fetchUser} />} />
         <Route
           path="/signup"
@@ -63,10 +67,28 @@ export default function App() {
             />
           }
         />
-        <Route path="/verify-email/:token" element={<EmailVerificationPage setUser={setUser} />} />
-        <Route path="/" element={user ? <DashboardPage user={user} onToolComplete={fetchUser} /> : <Navigate to="/login" />} />
-        <Route path="/buy-credits" element={user ? <BuyCreditsPage /> : <Navigate to="/login" />} />
-        <Route path="/watch-ad" element={user ? <WatchAdPage /> : <Navigate to="/login" />} />
+        <Route
+          path="/verify-email/:token"
+          element={<EmailVerificationPage setUser={setUser} />}
+        />
+
+        {/* Protected Routes */}
+        <Route
+          path="/"
+          element={
+            user ? <DashboardPage user={user} onToolComplete={fetchUser} /> : <Navigate to="/login" />
+          }
+        />
+        <Route
+          path="/buy-credits"
+          element={user ? <BuyCreditsPage /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/watch-ad"
+          element={user ? <WatchAdPage /> : <Navigate to="/login" />}
+        />
+
+        {/* Catch-all */}
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>
