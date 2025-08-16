@@ -1,21 +1,18 @@
-import type { Metadata } from "next";
 import "./globals.css";
-import { Navbar } from "@/components/Navbar";
-import Providers from "@/components/Providers";
+import { Providers } from "@/components/Providers";
 
-export const metadata: Metadata = {
+export const metadata = {
   title: "AIBuddies",
-  description: "Content tools, credits, and payments",
+  description: "Create, repurpose, and scale your content with AI.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body>
-        <Providers>
-          <Navbar />
-          <main className="container py-8">{children}</main>
-        </Providers>
+      <body className="min-h-screen bg-neutral-950 text-white antialiased">
+        <div className="max-w-6xl mx-auto p-4 sm:p-6">
+          <Providers>{children}</Providers>
+        </div>
       </body>
     </html>
   );
