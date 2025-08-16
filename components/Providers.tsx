@@ -1,8 +1,7 @@
 "use client";
-
-import { api, setAuthToken } from "@/lib/api";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import Cookies from "js-cookie";
-import React, { createContext, useState, useEffect, useContext } from "react";
+import { api, setAuthToken } from "@/lib/api";
 
 type User = {
   id: string;
@@ -10,27 +9,25 @@ type User = {
   email: string;
   credits: number;
   is_verified: boolean;
-} | null;
+};
 
-const Ctx = createContext<{
-  user: User;
+type Ctx = {
+  user: User | null;
   refreshUser: () => Promise<void>;
-}>({
+  logout: () => void;
+};
+
+const AuthContext = createContext<Ctx>({
   user: null,
   refreshUser: async () => {},
+  logout: () => {},
 });
 
-export default function Providers({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User>(null);
+export function Providers({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
 
   const refreshUser = async () => {
     try {
-      const token = Cookies.get("aib_token");
-      setAuthToken(token || null);
-      if (!token) {
-        setUser(null);
-        return;
-      }
       const res = await api.get("/api/users/me");
       setUser(res.data);
     } catch {
@@ -39,14 +36,23 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    refreshUser();
+    const token = Cookies.get("aib_token") || null;
+    setAuthToken(token);
+    if (token) refreshUser();
   }, []);
 
+  const logout = () => {
+    Cookies.remove("aib_token");
+    setAuthToken(null);
+    setUser(null);
+    if (typeof window !== "undefined") window.location.href = "/login";
+  };
+
   return (
-    <Ctx.Provider value={{ user, refreshUser }}>
+    <AuthContext.Provider value={{ user, refreshUser, logout }}>
       {children}
-    </Ctx.Provider>
+    </AuthContext.Provider>
   );
 }
 
-export const useAuth = () => useContext(Ctx);
+export const useAuth = () => useContext(AuthContext);
