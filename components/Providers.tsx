@@ -1,18 +1,24 @@
 "use client";
-import { createContext, useContext, useEffect, useState } from "react";
-import Cookies from "js-cookie";
+
 import { api, setAuthToken } from "@/lib/api";
-import { ReactNode } from "react";
+import Cookies from "js-cookie";
+import React, { createContext, useState, useEffect, useContext } from "react";
 
-export default function Providers({ children }: { children: ReactNode }) {
-  return <>{children}</>;
-}
+type User = {
+  id: string;
+  fullname: string;
+  email: string;
+  credits: number;
+  is_verified: boolean;
+} | null;
 
-type User = { id: string; fullname: string; email: string; credits: number; is_verified: boolean } | null;
-
-const Ctx = createContext<{ user: User; refreshUser: () => Promise<void>; }>(
-  { user: null, refreshUser: async () => {} }
-);
+const Ctx = createContext<{
+  user: User;
+  refreshUser: () => Promise<void>;
+}>({
+  user: null,
+  refreshUser: async () => {},
+});
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User>(null);
@@ -21,13 +27,20 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     try {
       const token = Cookies.get("aib_token");
       setAuthToken(token || null);
-      if (!token) { setUser(null); return; }
+      if (!token) {
+        setUser(null);
+        return;
+      }
       const res = await api.get("/api/users/me");
       setUser(res.data);
-    } catch { setUser(null); }
+    } catch {
+      setUser(null);
+    }
   };
 
-  useEffect(() => { refreshUser(); }, []);
+  useEffect(() => {
+    refreshUser();
+  }, []);
 
   return (
     <Ctx.Provider value={{ user, refreshUser }}>
