@@ -2,6 +2,11 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import Cookies from "js-cookie";
 import { api, setAuthToken } from "@/lib/api";
+import { ReactNode } from "react";
+
+export default function Providers({ children }: { children: ReactNode }) {
+  return <>{children}</>;
+}
 
 type User = { id: string; fullname: string; email: string; credits: number; is_verified: boolean } | null;
 
