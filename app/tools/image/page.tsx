@@ -31,6 +31,5 @@ export default function ImagePage() {
             <img key={i} className="rounded-xl border border-white/10" src={`data:image/png;base64,${b64}`} alt={`gen-${i}`} />
           ))}
         </div>
-      )}
     </div>
   );
